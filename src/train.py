@@ -23,19 +23,19 @@ from preprocess import *
 
 
 #######################################################################################################
-#                   Train Model
+#                                           Train Model
 #######################################################################################################
 
 def train_lr(X_train, y_train, preprocessor):
-    lr = Pipeline([
+    lr_model = Pipeline([
     ("preprocessing", preprocessor),
     ("classifier", LogisticRegression(max_iter=1000))
     ])
-    lr.fit(X_train, y_train)
-    return lr
+    lr_model.fit(X_train, y_train)
+    return lr_model
 
 
-def train_dtree(X_train, y_train, preprocessor):
+def train_dt(X_train, y_train, preprocessor):
     dt = DecisionTreeClassifier(
     criterion = 'gini',
     min_samples_leaf=10,
@@ -49,8 +49,8 @@ def train_dtree(X_train, y_train, preprocessor):
         ("classifier", dt)
     ])
 
-
     dt_model.fit(X_train, y_train)
+    return dt_model
 
 def train_rf(X_train, y_train, preprocessor):
     rf = RandomForestClassifier(
@@ -69,8 +69,9 @@ def train_rf(X_train, y_train, preprocessor):
     ])
 
     rf_model.fit(X_train, y_train)
+    return rf_model
 
-def train_xgb(X_train, y_train, preprocessor):
+def train_xg(X_train, y_train, preprocessor):
     xgb = XGBClassifier(
     n_estimators=200,
     learning_rate=0.05,
@@ -87,13 +88,13 @@ def train_xgb(X_train, y_train, preprocessor):
     ])
 
     xgb_model.fit(X_train, y_train)
-
+    return xgb_model
 
 #######################################################################################################
-#                   Validate
+#                                              Validate
 #######################################################################################################
 
-def validate(X_test, model):
+def validate(X_test, y_test, model):
     """
     Gets all relevant validation metrics and prints them
     """
@@ -129,16 +130,28 @@ def validate(X_test, model):
 
 
 #######################################################################################################
-#                   Run Prediction
+#                                           Run Prediction
 #######################################################################################################
 
 if __name__ == '__main__':
-    print('_____Start training_____')
+    print('____________Start training___________')
     preprocessor = create_preprocessor()
     train_df, validate_df = fetch_data()
     validate_df = wrangle_data(validate_df)
     train_df = wrangle_data(train_df)
     X_train, X_test, y_train, y_test = split_data(train_df, True)
+
+    print('__________Logistic Regression________')
     lr = train_lr(X_train, y_train, preprocessor)
-    validate(X_test, lr)
-    print('_____Training Completed_____')
+    validate(X_test, y_test, lr)
+    print('____________Decision Trees___________')
+    dt = train_dt(X_train, y_train, preprocessor)
+    validate(X_test, y_test, dt)
+    print('____________Random Forest___________')
+    rf = train_rf(X_train, y_train, preprocessor)
+    validate(X_test, y_test, rf)
+    print('______________XGBoost_______________')
+    xg = train_xg(X_train, y_train, preprocessor)
+    validate(X_test, y_test, xg)
+
+    print('__________Training completed_________')

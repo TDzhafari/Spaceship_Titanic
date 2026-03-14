@@ -25,14 +25,18 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 #######################################################################################################
 
 def fetch_data():
-
+    """
+    Retrieves data from .csv datasets.
+    """
     train_df = pd.read_csv(r'C:\Users\gagar\OneDrive\Documents\GitHub\Spaceship_Titanic\data\train.csv')
     test_df = pd.read_csv(r'C:\Users\gagar\OneDrive\Documents\GitHub\Spaceship_Titanic\data\test.csv')
 
     return train_df, test_df
 
 def run_eda(df):
-
+    """
+    Dataset review.
+    """
     # statistical overview of the dataset
     print('____Statistical overview of the numerical values in the dataset:_____')
     print(df.describe())
@@ -66,12 +70,14 @@ def wrangle_data(df):
     # Imputing cryosleep missing values
     df['CryoSleep'] = df[df['CryoSleep'] == 'nan'] = 'Unknown'
     df['CryoSleep'] = df['CryoSleep'].astype('str')
+    # Feature endingeering sum of expenses
+    df['Total_spent'] = df['ShoppingMall'] + df['FoodCourt'] + df['RoomService'] + df['Spa'] + df['VRDeck'] 
 
     return df
 
 def create_preprocessor():
     
-    numerical_fields = ['RoomService','FoodCourt','ShoppingMall','Spa','VRDeck','Age']
+    numerical_fields = ['RoomService','FoodCourt','ShoppingMall','Spa','VRDeck','Age', 'Total_spent']
     categorical_fields = ['HomePlanet','CryoSleep','Destination', 'VIP','cabin_name_1', 'cabin_name_3']
 
     numerical_pipeline = Pipeline([
@@ -94,7 +100,7 @@ def create_preprocessor():
 
 def split_data(df, do_split=True):
     """
-    Not entirely necessary 
+    Splitting the train dataset on train and test
     """
     print(df.columns)
     x = df.drop(columns=["PassengerId", "Transported", "cabin_name_2",
