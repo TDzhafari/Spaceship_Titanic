@@ -1,3 +1,5 @@
+import os
+import joblib
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -134,6 +136,10 @@ def validate(X_test, y_test, model):
 #######################################################################################################
 
 if __name__ == '__main__':
+
+    save_model = False
+    show_feature_importance = True
+
     print('____________Start training___________')
     preprocessor = create_preprocessor()
     train_df, validate_df = fetch_data()
@@ -153,5 +159,20 @@ if __name__ == '__main__':
     print('______________XGBoost_______________')
     xg = train_xg(X_train, y_train, preprocessor)
     validate(X_test, y_test, xg)
+
+    if save_model:
+        joblib.dump(xg, "models/spaceship_titanic_model.pkl")
+        print("_________Model has been saved_________")
+
+    if show_feature_importance:
+        rf_classifier = xg.named_steps["classifier"]
+        feature_names = xg.named_steps["preprocessing"].get_feature_names_out()
+
+        feature_importance = pd.Series(
+            rf_classifier.feature_importances_,
+            index=feature_names
+        ).sort_values(ascending=False)
+
+        print(feature_importance.head(15))
 
     print('__________Training completed_________')
