@@ -1,10 +1,13 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from xgboost import XGBClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, classification_report
@@ -32,14 +35,59 @@ def train_lr(X_train, y_train, preprocessor):
     return lr
 
 
-def train_dtree(X_train, y_train):
-    pass
+def train_dtree(X_train, y_train, preprocessor):
+    dt = DecisionTreeClassifier(
+    criterion = 'gini',
+    min_samples_leaf=10,
+    min_samples_split=2,
+    max_depth=7,
+    random_state=42
+    )
 
-def train_rf(X_train, y_train):
-    pass
+    dt_model = Pipeline([
+        ("preprocessing", preprocessor),
+        ("classifier", dt)
+    ])
 
-def train_xgb(X_train, y_train):
-    pass
+
+    dt_model.fit(X_train, y_train)
+
+def train_rf(X_train, y_train, preprocessor):
+    rf = RandomForestClassifier(
+    n_estimators=300,
+    min_samples_split=2,
+    min_samples_leaf=1,
+    max_depth=12,
+    random_state=42,
+    max_features='sqrt',
+    n_jobs=-1
+    )
+
+    rf_model = Pipeline([
+        ("preprocessing", preprocessor),
+        ("classifier", rf)
+    ])
+
+    rf_model.fit(X_train, y_train)
+
+def train_xgb(X_train, y_train, preprocessor):
+    xgb = XGBClassifier(
+    n_estimators=200,
+    learning_rate=0.05,
+    max_depth=4,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    random_state=42,
+    eval_metric="logloss"
+    )
+
+    xgb_model = Pipeline([
+        ("preprocessing", preprocessor),
+        ("classifier", xgb)
+    ])
+
+    xgb_model.fit(X_train, y_train)
+
 
 #######################################################################################################
 #                   Validate
