@@ -1,12 +1,12 @@
-import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, classification_report
 
 #######################################################################################################
@@ -26,7 +26,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 def fetch_data():
 
-    train_df = pd.read_csv(r'C:\Users\gagar\OneDrive\Documents\GitHub\Spaceship_Titanic\data\test.csv')
+    train_df = pd.read_csv(r'C:\Users\gagar\OneDrive\Documents\GitHub\Spaceship_Titanic\data\train.csv')
     test_df = pd.read_csv(r'C:\Users\gagar\OneDrive\Documents\GitHub\Spaceship_Titanic\data\test.csv')
 
     return train_df, test_df
@@ -97,7 +97,7 @@ def split_data(df, do_split=True):
     Not entirely necessary 
     """
     print(df.columns)
-    x = df.drop(columns=["PassengerId",# "Transported", "cabin_name_2"
+    x = df.drop(columns=["PassengerId", "Transported", "cabin_name_2",
                          "Cabin", "Name"])
     df["Transported"] = df["Transported"].astype('float')
     y = df["Transported"]
@@ -121,5 +121,7 @@ if __name__ == '__main__':
     
     train_df, test_df = fetch_data()
     run_eda(train_df)
-    wrangle_data(train_df)
+    df = wrangle_data(train_df)
+    print(df.head(10).to_string())
+
     print('__________________________Preprocessing complete________________________')
