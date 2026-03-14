@@ -10,7 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, classification_report
 
 #######################################################################################################
-#   Project: Spaceship Titatic
+#   Project: Spaceship Titatic (Preprocessing)
 #   Author: Timur Dzhafari
 #   Date: (TBD)
 #
@@ -31,31 +31,51 @@ def fetch_data():
 
     return train_df, test_df
 
-def run_eda(train_df):
+def run_eda(df):
 
     # statistical overview of the dataset
-    train_df.describe()
+    print('____Statistical overview of the numerical values in the dataset:_____')
+    print(df.describe())
 
     # check missing values
-    train_df.isnull().sum()
+    print('____Checking for null values____')
+    print(df.isnull().sum())
+
+    print('____Reviewing column datatypes____')
+    print(df.isnull().sum())
 
 #######################################################################################################
 #                   Data Prep
 #######################################################################################################
 
-def wrangle_data(train_df):
-    train_df['VIP'] = train_df['VIP'].astype('str')
-    train_df['VIP'] = train_df[train_df['VIP'] == 'nan'] = 'Unknown'
-    train_df['CryoSleep'] = train_df[train_df['CryoSleep'] == 'nan'] = 'Unknown'
-    train_df['Destination'] = train_df['Destination'].astype('str')
-    train_df['CryoSleep'] = train_df['CryoSleep'].astype('str')
+def wrangle_data(df):
+    """
+    Wrangling the dataset, preparing it for modeling
+    """
+    # Replacing missing values with comparable structure cabin ids
+    df.Cabin = df.Cabin.fillna('Unknown/Unknown/Unknown')
+    # Feature eangineering cabin id into 3 usable fields
+    df['cabin_name_1'] = df['Cabin'].apply(lambda x: x.split('/')[0])
+    df['cabin_name_2'] = df['Cabin'].apply(lambda x: x.split('/')[1])
+    df['cabin_name_3'] = df['Cabin'].apply(lambda x: x.split('/')[2])   
+    # Fixing missing VIP values
+    df['VIP'] = df['VIP'].astype('str')
+    df['VIP'] = df[df['VIP'] == 'nan'] = 'Unknown'
+    # Updating datatype for destination
+    df['Destination'] = df['Destination'].astype('str')
+    # Imputing cryosleep missing values
+    df['CryoSleep'] = df[df['CryoSleep'] == 'nan'] = 'Unknown'
+    df['CryoSleep'] = df['CryoSleep'].astype('str')
 
+    return df
 
+def create_preprocessor():
+    
     numerical_fields = ['RoomService','FoodCourt','ShoppingMall','Spa','VRDeck','Age']
     categorical_fields = ['HomePlanet','CryoSleep','Destination', 'VIP','cabin_name_1', 'cabin_name_3']
-    #string_fields = []
 
     numerical_pipeline = Pipeline([
+
         ("imputer", SimpleImputer(strategy="median")), #imputing nan values setting median for skewed datasets
         ("scaler", StandardScaler())
     ])
@@ -65,34 +85,33 @@ def wrangle_data(train_df):
         ("onehot", OneHotEncoder(sparse_output=False, handle_unknown="ignore"))
     ])
 
-    string_pipeline = Pipeline([
-        ("imputer", SimpleImputer(strategy="constant", fill_value="Unknown"))
-    ])
-
     preprocessor = ColumnTransformer([
         ("num", numerical_pipeline, numerical_fields),
         ("cat", categorical_pipeline, categorical_fields),
-    #    ("str", string_pipeline, string_fields)
     ], remainder='passthrough')
 
     return preprocessor
 
-#######################################################################################################
-#                   Train Model
-#######################################################################################################
+def split_data(df, do_split=True):
+    """
+    Not entirely necessary 
+    """
+    print(df.columns)
+    x = df.drop(columns=["PassengerId",# "Transported", "cabin_name_2"
+                         "Cabin", "Name"])
+    df["Transported"] = df["Transported"].astype('float')
+    y = df["Transported"]
+    if do_split:
+        X_train, X_test, y_train, y_test = train_test_split(
+        x,
+        y,
+        test_size=0.2,
+        random_state=42,
+        stratify=y
+        )   
 
-def train_dtree():
-    pass
-
-def train_rf():
-    pass
-
-def train_xgb():
-    pass
-
-#######################################################################################################
-#                   Validate
-#######################################################################################################
+        return X_train, X_test, y_train, y_test
+    return x, y
 
 #######################################################################################################
 #                   Run Prediction
@@ -103,3 +122,4 @@ if __name__ == '__main__':
     train_df, test_df = fetch_data()
     run_eda(train_df)
     wrangle_data(train_df)
+    print('__________________________Preprocessing complete________________________')
